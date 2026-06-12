@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: websocket-service
-          image: ghcr.io/M-Ali-Fouladi/websocket-service:d8e6c47de7323da966cde74a08ab9965b45fa21d
+          image: ghcr.io/M-Ali-Fouladi/websocket-service:7812efdb78dae657db8cb29c606010c974a55171
           imagePullPolicy: Always
 
           ports:
