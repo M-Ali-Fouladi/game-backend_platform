@@ -36,7 +36,8 @@ jobs:
         run: |
           docker build \
             -t ghcr.io/m-ali-fouladi/${{ matrix.service }}:${{ github.sha }} \
-            -f services/${{ matrix.service }}/Dockerfile .
+            -f services/${{ matrix.service }}/Dockerfile \
+            services/${{ matrix.service }}
 
       - name: Push Docker image
         run: |
