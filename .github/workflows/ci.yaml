@@ -14,36 +14,36 @@ permissions:
   contents: read
   packages: write
 
-  strategy:
-    matrix:
-      service:
-        - player-service
-        - matchmaking-service
-        - leaderboard-service
-        - telemetry-service
-        - websocket-service
+strategy:
+  matrix:
+    service:
+      - player-service
+      - matchmaking-service
+      - leaderboard-service
+      - telemetry-service
+      - websocket-service
 
-  steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
 
-    - name: Log in to GHCR
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GHCR_TOKEN }}
+  - name: Log in to GHCR
+    uses: docker/login-action@v3
+    with:
+      registry: ghcr.io
+      username: ${{ github.actor }}
+      password: ${{ secrets.GHCR_TOKEN }}
 
-    - name: Build Docker image
-      run: |
-        docker build \
-          -t ghcr.io/m-ali-fouladi/${{ matrix.service }}:${{ github.sha }} \
-          -f services/${{ matrix.service }}/Dockerfile \
-          services/${{ matrix.service }}
+  - name: Build Docker image
+    run: |
+      docker build \
+        -t ghcr.io/m-ali-fouladi/${{ matrix.service }}:${{ github.sha }} \
+        -f services/${{ matrix.service }}/Dockerfile \
+        services/${{ matrix.service }}
 
-    - name: Push Docker image
-      run: |
-        docker push ghcr.io/m-ali-fouladi/${{ matrix.service }}:${{ github.sha }}
+  - name: Push Docker image
+    run: |
+      docker push ghcr.io/m-ali-fouladi/${{ matrix.service }}:${{ github.sha }}
 
 
 update-gitops:
