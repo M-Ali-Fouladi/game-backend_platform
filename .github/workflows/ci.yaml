@@ -11,74 +11,70 @@ jobs:
     permissions:
       contents: read
       packages: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-strategy:
-  matrix:
-    service:
-      - player-service
-      - matchmaking-service
-      - leaderboard-service
-      - telemetry-service
-      - websocket-service
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+      matrix:
+        service:
+          - player-service
+          - matchmaking-service
+          - leaderboard-service
+          - telemetry-service
+          - websocket-service
 
-steps:
-  - name: Checkout repository
-    uses: actions/checkout@v4
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:${{ github.sha }} \
+            -f services/${{ matrix.service }}/Dockerfile .
 
-  - name: Log in to GHCR
-    uses: docker/login-action@v3
-    with:
-      registry: ghcr.io
-      username: ${{ github.actor }}
-      password: ${{ secrets.GHCR_TOKEN }}
+      - name: Push Docker image
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:${{ github.sha }}
 
-  - name: Build Docker image
-    run: |
-      docker build \
-        -t ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:${{ github.sha }} \
-        -f services/${{ matrix.service }}/Dockerfile .
+      - name: Checkout GitOps Repository
+        uses: actions/checkout@v4
+        with:
+          repository: M-Ali-Fouladi/game-backend-gitops
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
 
-  - name: Push Docker image
-    run: |
-      docker push ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:${{ github.sha }}
+      - name: Update image tags
+        run: |
+          SERVICES=(
+            player-service
+            matchmaking-service
+            leaderboard-service
+            telemetry-service
+            websocket-service
+          )
 
-gitops:
-needs: docker
-runs-on: ubuntu-latest
+          for SERVICE in "${SERVICES[@]}"
+          do
+            sed -i "s|image: .*${SERVICE}:.*|image: ghcr.io/${{ github.repository_owner }}/${SERVICE}:${{ github.sha }}|g" \
+            gitops/apps/${SERVICE}/deployment.yaml
+          done
 
-steps:
-  - name: Checkout GitOps Repository
-    uses: actions/checkout@v4
-    with:
-      repository: M-Ali-Fouladi/game-backend-gitops
-      token: ${{ secrets.GITOPS_TOKEN }}
-      path: gitops
+      - name: Commit and Push changes
+        run: |
+          cd gitops
 
-  - name: Update image tags
-    run: |
-      SERVICES=(
-        player-service
-        matchmaking-service
-        leaderboard-service
-        telemetry-service
-        websocket-service
-      )
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
 
-      for SERVICE in "${SERVICES[@]}"
-      do
-        sed -i "s|image: .*${SERVICE}:.*|image: ghcr.io/${{ github.repository_owner }}/${SERVICE}:${{ github.sha }}|g" \
-        gitops/apps/${SERVICE}/deployment.yaml
-      done
+          git add .
 
-  - name: Commit and Push changes
-    run: |
-      cd gitops
+          git commit -m "Update game backend images to ${{ github.sha }}" || exit 0
 
-      git config user.name "github-actions"
-      git config user.email "github-actions@github.com"
+          git push origin main
 
-      git add .
-
-      git commit -m "Update game backend images to ${{ github.sha }}" || exit 0
-
-      git push origin main
+          strategy:
+      
