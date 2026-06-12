@@ -65,6 +65,7 @@ jobs:
             gitops/apps/${SERVICE}/deployment.yaml
           done
 
+      
       - name: Commit and Push changes
         run: |
           cd gitops
