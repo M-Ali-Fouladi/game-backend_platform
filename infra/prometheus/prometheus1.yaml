@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+
+  - job_name: player-service
+
+    static_configs:
+      - targets:
+          - player-service:8000
+
+  - job_name: matchmaking-service
+
+    static_configs:
+      - targets:
+          - matchmaking-service:8000
+
+  - job_name: telemetry-service
+
+    static_configs:
+      - targets:
+          - telemetry-service:8000

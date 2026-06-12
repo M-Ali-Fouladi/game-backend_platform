@@ -1,0 +1,77 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: game
+      POSTGRES_PASSWORD: gamepass
+      POSTGRES_DB: game_db
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  player-service:
+    build: ./services/player-service
+    environment:
+      DATABASE_URL: postgresql://game:gamepass@postgres:5432/game_db
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8000:8000"
+  matchmaking-service:
+    build: ./services/matchmaking-service
+    container_name: matchmaking-service
+    ports:
+      - "8002:8000"
+    environment:
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - redis
+  leaderboard-service:
+    build: ./services/leaderboard-service
+    ports:
+      - "8003:8000"
+    depends_on:
+      - redis
+
+  websocket-service:
+    build: ./services/websocket-service
+    ports:
+      - "8004:8000"
+    depends_on:
+      - redis
+  
+  telemetry-service:
+    build: ./services/telemetry-service
+    ports:
+      - "8005:8000"
+    depends_on:
+      - redis 
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus1.yaml'
+    volumes:
+      - ./infra/prometheus/prometheus1.yaml:/etc/prometheus/prometheus1.yaml
+    ports:
+      - "9090:9090"
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
