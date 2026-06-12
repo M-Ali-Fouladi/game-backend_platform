@@ -11,13 +11,14 @@ jobs:
     permissions:
       contents: read
       packages: write
-    matrix:
-      service:
-        - player-service
-        - matchmaking-service
-        - leaderboard-service
-        - telemetry-service
-        - websocket-service
+    strategy:
+      matrix:
+        service:
+          - player-service
+          - matchmaking-service
+          - leaderboard-service
+          - telemetry-service
+          - websocket-service
       
     steps:
       - name: Checkout repository
@@ -77,5 +78,5 @@ jobs:
 
           git push origin main
 
-          strategy:
+          
       
