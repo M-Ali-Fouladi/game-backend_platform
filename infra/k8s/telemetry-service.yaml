@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: telemetry-service
-          image: ghcr.io/M-Ali-Fouladi/telemetry-service:c75ea0c0467775292297d777d4370beaca21aa50
+          image: ghcr.io/M-Ali-Fouladi/telemetry-service:9daded35d9847c6bbaff4e5ee2100c755758abd4
           imagePullPolicy: Always
 
           ports:
