@@ -62,8 +62,8 @@ jobs:
 
           for SERVICE in "${SERVICES[@]}"
           do
-            sed -i "s|image: .*${SERVICE}:.*|image: ghcr.io/${{ github.repository_owner }}/${SERVICE}:${{ github.sha }}|g" \
-            gitops/apps/${SERVICE}/deployment.yaml
+            sed -i "s|ghcr.io/${{ github.repository_owner }}/${SERVICE}:${{ github.sha }}|g" \
+            k8s/${SERVICE}.yaml
           done
 
       
