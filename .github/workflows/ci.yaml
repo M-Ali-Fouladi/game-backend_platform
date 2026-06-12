@@ -1,0 +1,84 @@
+name: Build and Push Game Backend Services
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+strategy:
+  matrix:
+    service:
+      - player-service
+      - matchmaking-service
+      - leaderboard-service
+      - telemetry-service
+      - websocket-service
+
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
+
+  - name: Log in to GHCR
+    uses: docker/login-action@v3
+    with:
+      registry: ghcr.io
+      username: ${{ github.actor }}
+      password: ${{ secrets.GHCR_TOKEN }}
+
+  - name: Build Docker image
+    run: |
+      docker build \
+        -t ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:${{ github.sha }} \
+        -f services/${{ matrix.service }}/Dockerfile .
+
+  - name: Push Docker image
+    run: |
+      docker push ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:${{ github.sha }}
+
+gitops:
+needs: docker
+runs-on: ubuntu-latest
+
+steps:
+  - name: Checkout GitOps Repository
+    uses: actions/checkout@v4
+    with:
+      repository: username/game-backend-gitops
+      token: ${{ secrets.GITOPS_TOKEN }}
+      path: gitops
+
+  - name: Update image tags
+    run: |
+      SERVICES=(
+        player-service
+        matchmaking-service
+        leaderboard-service
+        telemetry-service
+        websocket-service
+      )
+
+      for SERVICE in "${SERVICES[@]}"
+      do
+        sed -i "s|image: .*${SERVICE}:.*|image: ghcr.io/${{ github.repository_owner }}/${SERVICE}:${{ github.sha }}|g" \
+        gitops/apps/${SERVICE}/deployment.yaml
+      done
+
+  - name: Commit and Push changes
+    run: |
+      cd gitops
+
+      git config user.name "github-actions"
+      git config user.email "github-actions@github.com"
+
+      git add .
+
+      git commit -m "Update game backend images to ${{ github.sha }}" || exit 0
+
+      git push origin main
