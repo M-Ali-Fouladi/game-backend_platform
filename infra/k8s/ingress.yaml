@@ -1,0 +1,53 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+name: game-backend-ingress
+
+spec:
+ingressClassName: nginx
+
+
+
+```
+  http:
+    paths:
+      - path: /players
+        pathType: Prefix
+        backend:
+          service:
+            name: player-service
+            port:
+              number: 80
+
+      - path: /matchmaking
+        pathType: Prefix
+        backend:
+          service:
+            name: matchmaking-service
+            port:
+              number: 80
+
+      - path: /leaderboard
+        pathType: Prefix
+        backend:
+          service:
+            name: leaderboard-service
+            port:
+              number: 80
+
+      - path: /telemetry
+        pathType: Prefix
+        backend:
+          service:
+            name: telemetry-service
+            port:
+              number: 80
+
+      - path: /ws
+        pathType: Prefix
+        backend:
+          service:
+            name: websocket-service
+            port:
+              number: 80
+```
