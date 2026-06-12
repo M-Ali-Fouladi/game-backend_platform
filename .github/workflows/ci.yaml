@@ -50,6 +50,10 @@ jobs:
           token: ${{ secrets.GITOPS_TOKEN }}
           path: gitops
 
+      - name: List repository
+        run: |
+          ls -R
+          
       - name: Update image tags
         run: |
           SERVICES=(
