@@ -1,88 +1,95 @@
 name: Build and Push Game Backend Services
 
 on:
-  push:
-    branches:
-      - main
+push:
+branches:
+- main
 
 jobs:
-  docker:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    strategy:
-      matrix:
-        service:
-          - player-service
-          - matchmaking-service
-          - leaderboard-service
-          - telemetry-service
-          - websocket-service
-      
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+docker:
+runs-on: ubuntu-latest
+permissions:
+contents: read
+packages: write
 
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
-      
+```
+strategy:
+  matrix:
+    service:
+      - player-service
+      - matchmaking-service
+      - leaderboard-service
+      - telemetry-service
+      - websocket-service
 
-      - name: Build Docker image
-        run: |
-          docker build \
-            -t ghcr.io/m-ali-fouladi/${{ matrix.service }}:${{ github.sha }} \
-            -f services/${{ matrix.service }}/Dockerfile \
-            services/${{ matrix.service }}
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
 
-      - name: Push Docker image
-        run: |
-          docker push ghcr.io/m-ali-fouladi/${{ matrix.service }}:${{ github.sha }}
+  - name: Log in to GHCR
+    uses: docker/login-action@v3
+    with:
+      registry: ghcr.io
+      username: ${{ github.actor }}
+      password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Checkout GitOps Repository
-        uses: actions/checkout@v4
-        with:
-          repository: M-Ali-Fouladi/game-backend_platform
-          token: ${{ secrets.GITOPS_TOKEN }}
-          path: gitops
+  - name: Build Docker image
+    run: |
+      docker build \
+        -t ghcr.io/m-ali-fouladi/${{ matrix.service }}:${{ github.sha }} \
+        -f services/${{ matrix.service }}/Dockerfile \
+        services/${{ matrix.service }}
 
-      - name: List repository
-        run: |
-          ls -R
+  - name: Push Docker image
+    run: |
+      docker push ghcr.io/m-ali-fouladi/${{ matrix.service }}:${{ github.sha }}
+```
 
-      - name: Update image tags
-        run: |
-          SERVICES=(
-            player-service
-            matchmaking-service
-            leaderboard-service
-            telemetry-service
-            websocket-service
-          )
+update-gitops:
+needs: docker
+runs-on: ubuntu-latest
 
-          for SERVICE in "${SERVICES[@]}"
-          do
-            sed -i "s|image: .*|image: ghcr.io/${{ github.repository_owner }}/${SERVICE}:${{ github.sha }}|g" \
-            gitops/infra/k8s/${SERVICE}.yaml
-          done
+```
+steps:
+  - name: Checkout GitOps Repository
+    uses: actions/checkout@v4
+    with:
+      repository: M-Ali-Fouladi/game-backend_platform
+      token: ${{ secrets.GITOPS_TOKEN }}
+      path: gitops
 
-      
-      - name: Commit and Push changes
-        run: |
-          cd gitops
+  - name: List repository
+    run: |
+      ls -R
 
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+  - name: Update image tags
+    run: |
+      SERVICES=(
+        player-service
+        matchmaking-service
+        leaderboard-service
+        telemetry-service
+        websocket-service
+      )
 
-          git add .
+      for SERVICE in "${SERVICES[@]}"
+      do
+        sed -i "s|image: .*|image: ghcr.io/${{ github.repository_owner }}/${SERVICE}:${{ github.sha }}|g" \
+        gitops/infra/k8s/${SERVICE}.yaml
+      done
 
-          git commit -m "Update game backend images to ${{ github.sha }}" || exit 0
+  - name: Commit and Push changes
+    run: |
+      cd gitops
 
-          git push origin main
+      git config user.name "github-actions[bot]"
+      git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          
-      
+      git pull --rebase origin main
+
+      git add .
+
+      git commit -m "Update game backend images to ${{ github.sha }}" || exit 0
+
+      git push origin main
+```
