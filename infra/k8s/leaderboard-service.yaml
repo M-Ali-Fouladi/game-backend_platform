@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: leaderboard-service
-          image: ghcr.io/M-Ali-Fouladi/leaderboard-service:596a9b8d8daa240d5364b159447debe702871d72
+          image: ghcr.io/M-Ali-Fouladi/leaderboard-service:e1ae8e99d3b3a0cb676af2ea1ed8cf18e21a1e99
           imagePullPolicy: Always
 
           ports:
