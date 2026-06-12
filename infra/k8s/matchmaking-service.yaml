@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: matchmaking-service
-          image: ghcr.io/M-Ali-Fouladi/matchmaking-service:65d699ac1950f78b89681623b5d25885f071d0bd
+          image: ghcr.io/M-Ali-Fouladi/matchmaking-service:d832fb2ecee2f98abfd87e6ed73a2cade13a57a9
           imagePullPolicy: Always
 
           ports:
