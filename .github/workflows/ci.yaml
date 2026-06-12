@@ -46,7 +46,7 @@ jobs:
       - name: Checkout GitOps Repository
         uses: actions/checkout@v4
         with:
-          repository: M-Ali-Fouladi/game-backend-gitops
+          repository: M-Ali-Fouladi/game-backend_platform
           token: ${{ secrets.GITOPS_TOKEN }}
           path: gitops
 
