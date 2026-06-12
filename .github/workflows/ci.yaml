@@ -50,7 +50,7 @@ steps:
   - name: Checkout GitOps Repository
     uses: actions/checkout@v4
     with:
-      repository: username/game-backend-gitops
+      repository: M-Ali-Fouladi/game-backend-gitops
       token: ${{ secrets.GITOPS_TOKEN }}
       path: gitops
 
