@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: player-service
-          image: ghcr.io/M-Ali-Fouladi/player-service:a2b57760f742088e82507d96712b7c537c83b420
+          image: ghcr.io/M-Ali-Fouladi/player-service:1dbcb4eede432bd366f8705ae7b1421ded5936b8
           imagePullPolicy: Always
 
           ports:
