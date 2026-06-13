@@ -8,13 +8,22 @@ services:
       POSTGRES_USER: game
       POSTGRES_PASSWORD: gamepass
       POSTGRES_DB: game_db
-    ports:
-      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7
+    volumes:
+      - redis_data:/data
     ports:
-      - "6379:6379"
+      - "6379"
 
   player-service:
     build: ./services/player-service
@@ -75,3 +84,8 @@ services:
       - "3000:3000"
     depends_on:
       - prometheus
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
